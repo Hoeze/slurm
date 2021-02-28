@@ -5,18 +5,41 @@ import shlex
 import sys
 import time
 import logging
+import argparse
 
 logger = logging.getLogger("__name__")
 
-STATUS_ATTEMPTS = 20
+parser = argparse.ArgumentParser(description='Get the status of some slurm job.')
+parser.add_argument(
+    '--status_attempts',
+    action='store',
+    dest="status_attempts",
+    type=int,
+    default=20,
+    help='number of attenpts to obtain cluster status'
+)
+parser.add_argument(
+    '--cluster',
+    action='store',
+    dest="cluster",
+    default="",
+    help='cluster name'
+)
 
-jobid = sys.argv[1]
+parser.add_argument(
+    'jobid',
+    action='store',
+    help='Slurm job id'
+)
 
-{% if cookiecutter.cluster_name %}  # noqa: E999,E225
-cluster = "--cluster={{cookiecutter.cluster_name}}"
-{% else %}  # noqa: E225
-cluster = ""
-{% endif %}  # noqa: E225
+args = parser.parse_args()
+
+jobid = args.jobid
+STATUS_ATTEMPTS = args.status_attempts
+if args.cluster != "":
+    cluster = f"--cluster={args.cluster}"
+else:
+    cluster = ""
 
 for i in range(STATUS_ATTEMPTS):
     try:
